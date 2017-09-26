@@ -106,6 +106,7 @@ class MainWindow(QtGui.QWidget):
     def start(self):
         self.ctrl_tab.setCurrentIndex(2)
         self.running = True
+        self.update_ui()
         try:
             mefi = (parse_ints(self.ctrl_vacc.text()),
                     parse_ints(self.ctrl_energy.text()),
@@ -118,10 +119,12 @@ class MainWindow(QtGui.QWidget):
             self.worker.start()
         except:
             self.running = False
+            self.update_ui()
             raise
 
     def cancel(self):
         self.running = False
+        self.update_ui()
 
     def log(self, text, *args, **kwargs):
         self.logged.emit(text.format(*args, **kwargs))
