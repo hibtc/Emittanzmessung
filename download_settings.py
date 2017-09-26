@@ -170,15 +170,16 @@ class MainWindow(QtGui.QWidget):
             for param in list(params):
                 if not self.running:
                     break
-                self.log('... {}', param)
                 try:
                     val = self.dll.GetFloatValue(param)
                 except RuntimeError as e:
-                    self.log(' -> FAILED: {}', e)
+                    self.log('{} -> FAILED: {}', param, e)
                     # forget this parameter for current VAcc for efficiency:
                     params.remove(param)
+                except BaseException as e:
+                    self.log('{} -> ERROR: {}', param, e)
+                    raise
                 else:
-                    self.log(' -> {}', val)
                     # MADX compatible output format:
                     f.write('{} = {};\n'.format(param, val))
 
