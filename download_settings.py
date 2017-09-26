@@ -9,6 +9,7 @@ import logging
 import threading
 import itertools
 import functools
+import collections
 
 # Load Qt4 or Qt5
 try:
@@ -135,14 +136,14 @@ class MainWindow(QtGui.QWidget):
     def download(self, params, mefis):
         if self.dll is None:
             self.load_dll()
+        par = collections.defaultdict(lambda: list(params))
         mul = lambda a, b: a * b
         num = functools.reduce(mul, map(len, mefis))
         for i, mefi in enumerate(itertools.product(*mefis)):
             if not self.running:
                 break
             progress = '{}/{} = {:.0f}%'.format(i, num, i/num*100)
-            self.download_mefi(params, mefi, progress)
-
+            self.download_mefi(par[vacc], mefi, progress)
 
     def download_mefi(self, params, mefi, progress):
 
@@ -151,7 +152,7 @@ class MainWindow(QtGui.QWidget):
             os.makedirs(folder)
         except OSError:     # no exist_ok on py2
             pass
-        filename = os.path.join(folder, 'M{}-E{}-F{}-I{}.str'.format(*mefi))
+        filename = os.path.join(folder, 'M{}-E{}-F{}-I{}-G{}.str'.format(*mefi))
 
         with open(filename, 'w') as f:
             vacc, energy, focus, intensity = mefi
@@ -161,7 +162,7 @@ class MainWindow(QtGui.QWidget):
             self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={})', progress, *mefi)
             self.dll.SelectMEFI(*mefi)
 
-            for param in params:
+            for param in list(params):
                 if not self.running:
                     break
                 self.log('... {}', param)
@@ -169,6 +170,8 @@ class MainWindow(QtGui.QWidget):
                     val = self.dll.GetFloatValue(param)
                 except RuntimeError as e:
                     self.log(' -> FAILED: {}', e)
+                    # forget this parameter for current VAcc for efficiency:
+                    params.remove(param)
                 else:
                     self.log(' -> {}', val)
                     # MADX compatible output format:
