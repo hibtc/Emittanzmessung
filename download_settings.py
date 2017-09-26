@@ -36,6 +36,7 @@ VACCS       = [1]
 ENERGIES    = [1, 18, 48, 78, 108, 138, 168, 198, 228, 255]
 FOCUSES     = [4]
 INTENSITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ANGLE       = [0]
 
 
 def fmt_ints(ints):
@@ -59,6 +60,7 @@ class MainWindow(QtGui.QWidget):
         self.ctrl_energy.setText(fmt_ints(ENERGIES))
         self.ctrl_focus.setText(fmt_ints(FOCUSES))
         self.ctrl_intensity.setText(fmt_ints(INTENSITIES))
+        self.ctrl_angle.setText(fmt_ints(ANGLES))
         self.load_params(param_file)
         # signals
         self.btn_download.clicked.connect(self.start)
@@ -67,6 +69,7 @@ class MainWindow(QtGui.QWidget):
         self.ctrl_energy.textChanged.connect(self.update_ui)
         self.ctrl_focus.textChanged.connect(self.update_ui)
         self.ctrl_intensity.textChanged.connect(self.update_ui)
+        self.ctrl_angle.textChanged.connect(self.update_ui)
         #
         self.logged.connect(self.ctrl_log.appendPlainText)
 
@@ -89,12 +92,14 @@ class MainWindow(QtGui.QWidget):
         self.ctrl_energy.setReadOnly(running)
         self.ctrl_focus.setReadOnly(running)
         self.ctrl_intensity.setReadOnly(running)
+        self.ctrl_angle.setReadOnly(running)
 
     def mefi(self):
         return (parse_ints(self.ctrl_vacc.text()),
                 parse_ints(self.ctrl_energy.text()),
                 parse_ints(self.ctrl_focus.text()),
-                parse_ints(self.ctrl_intensity.text()))
+                parse_ints(self.ctrl_intensity.text()),
+                parse_ints(self.ctrl_angle.text()))
 
     def can_start(self):
         try:
@@ -111,7 +116,8 @@ class MainWindow(QtGui.QWidget):
             mefi = (parse_ints(self.ctrl_vacc.text()),
                     parse_ints(self.ctrl_energy.text()),
                     parse_ints(self.ctrl_focus.text()),
-                    parse_ints(self.ctrl_intensity.text()))
+                    parse_ints(self.ctrl_intensity.text()),
+                    parse_ints(self.ctrl_angle.text()))
             pars = [self.ctrl_params.item(i).text()
                     for i in range(self.ctrl_params.count())]
             args = (pars, mefi)
@@ -158,11 +164,11 @@ class MainWindow(QtGui.QWidget):
         filename = os.path.join(folder, 'M{}-E{}-F{}-I{}-G{}.str'.format(*mefi))
 
         with open(filename, 'w') as f:
-            vacc, energy, focus, intensity = mefi
+            vacc = mefi[0]
             if vacc != self.dll.GetSelectedVAcc():
                 self.log('SelectVAcc({})', vacc)
                 self.dll.SelectVAcc(vacc)
-            self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={})', progress, *mefi)
+            self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={}, G={})', progress, *mefi)
             self.dll.SelectMEFI(*mefi)
 
             for param in list(params):
