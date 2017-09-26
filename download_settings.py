@@ -121,8 +121,6 @@ class MainWindow(QtGui.QWidget):
 
     def load_dll(self):
         self.log('Connecting DLL')
-        self.log('Connecting DLL')
-        self.log('Connecting DLL')
         # dll = BeamOptikDLL(BeamOptikDllProxy({}))
         dll = BeamOptikDLL.load_library()
         dll.GetInterfaceInstance()
@@ -137,7 +135,7 @@ class MainWindow(QtGui.QWidget):
         for i, mefi in enumerate(itertools.product(*mefis)):
             if not self.running:
                 break
-            progress = '{}/{} = {.0f}%'.format(i, num, i/num*100)
+            progress = '{}/{} = {:.0f}%'.format(i, num, i/num*100)
             self.download_mefi(params, mefi, progress)
 
 
@@ -152,9 +150,9 @@ class MainWindow(QtGui.QWidget):
 
         with open(filename, 'w') as f:
             vacc, energy, focus, intensity = mefi
-            if vacc != dll.GetVacc():
+            if vacc != self.dll.GetSelectedVAcc():
                 self.log('SelectVAcc({})', vacc)
-                dll.SelectVAcc(vacc)
+                self.dll.SelectVAcc(vacc)
             self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={})', vacc, *mefi)
             self.dll.SelectMEFI(*mefi)
 
