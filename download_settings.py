@@ -180,7 +180,7 @@ class MainWindow(QtGui.QWidget):
                 else:
                     self.log(' -> {}', val)
                     # MADX compatible output format:
-                    f.write('{} = {:.15e};\n'.format(param, val))
+                    f.write('{} = {};\n'.format(param, val))
 
 
 def main(param_file=None):
