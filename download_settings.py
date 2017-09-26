@@ -11,12 +11,18 @@ import itertools
 import functools
 
 # Load Qt4 or Qt5
-from qtconsole.qt_loaders import load_qt
-QtCore, QtGui, QtSvg, QT_API = load_qt(['pyqt', 'pyqt5'])
-if QT_API == 'pyqt':
-    from PyQt4 import uic
-elif QT_API == 'pyqt5':
-    from PyQt5 import uic
+try:
+    import types
+    from PyQt5 import QtCore, QtGui, uic, QtWidgets
+    QtGuiCompat = types.ModuleType('QtGui')
+    QtGuiCompat.__dict__.update(QtGui.__dict__)
+    QtGuiCompat.__dict__.update(QtWidgets.__dict__)
+    QtGui = QtGuiCompat
+except ImportError:
+    import sip
+    sip.setapi('QString', 2)
+    sip.setapi('QVariant', 2)
+    from PyQt4 import QtCore, QtGui, uic
 
 
 from hit.online_control.beamoptikdll import BeamOptikDLL
