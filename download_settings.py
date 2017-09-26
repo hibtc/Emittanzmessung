@@ -158,7 +158,7 @@ class MainWindow(QtGui.QWidget):
             if vacc != self.dll.GetSelectedVAcc():
                 self.log('SelectVAcc({})', vacc)
                 self.dll.SelectVAcc(vacc)
-            self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={})', vacc, *mefi)
+            self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={})', progress, *mefi)
             self.dll.SelectMEFI(*mefi)
 
             for param in params:
