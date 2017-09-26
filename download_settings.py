@@ -113,11 +113,7 @@ class MainWindow(QtGui.QWidget):
         self.running = True
         self.update_ui()
         try:
-            mefi = (parse_ints(self.ctrl_vacc.text()),
-                    parse_ints(self.ctrl_energy.text()),
-                    parse_ints(self.ctrl_focus.text()),
-                    parse_ints(self.ctrl_intensity.text()),
-                    parse_ints(self.ctrl_angle.text()))
+            mefi = self.mefi()
             pars = [self.ctrl_params.item(i).text()
                     for i in range(self.ctrl_params.count())]
             args = (pars, mefi)
