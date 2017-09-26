@@ -24,12 +24,12 @@ except ImportError:
     sip.setapi('QVariant', 2)
     from PyQt4 import QtCore, QtGui, uic
 
-
-from hit.online_control.beamoptikdll import BeamOptikDLL
-#from hit.online_control.stub import BeamOptikDllProxy
-
-
 DATA_FOLDER = os.path.dirname(__file__)
+
+# allow shipping and importing beamoptikdll.py from same folder
+sys.path.append(DATA_FOLDER)
+from beamoptikdll import BeamOptikDLL
+
 
 VACCS       = [1]
 ENERGIES    = [1, 18, 48, 78, 108, 138, 168, 198, 228, 255]
@@ -127,7 +127,6 @@ class MainWindow(QtGui.QWidget):
 
     def load_dll(self):
         self.log('Connecting DLL')
-        # dll = BeamOptikDLL(BeamOptikDllProxy({}))
         dll = BeamOptikDLL.load_library()
         dll.GetInterfaceInstance()
         self.dll = dll
