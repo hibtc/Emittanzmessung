@@ -83,14 +83,14 @@ def main(data_folder, seq_name, *madx_files):
 
     # read all valid measurements:
     all_records = {}
-    for filename in os.listdir(data_folder):
-        filename = os.path.join(data_folder, filename)
-        data = parse_device_export(filename)
-        if data['envx'] != -9999.0 and data['envy'] != -9999.0:
-            all_records\
-                .setdefault(data['mefi'], {})\
-                .setdefault(data['device'], []))\
-                .append(data)
+    for dirpath, dirnames, filenames in os.walk(data_folder):
+        for filename in filenames:
+            data = parse_device_export(os.path.join(dirpath, filename))
+            if data['envx'] != -9999.0 and data['envy'] != -9999.0:
+                all_records\
+                    .setdefault(data['mefi'], {})\
+                    .setdefault(data['device'], [])\
+                    .append(data)
 
     # average measurements for same mefi setting and device
     averaged = {
