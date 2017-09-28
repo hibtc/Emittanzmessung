@@ -157,7 +157,8 @@ class MainWindow(QtGui.QWidget):
             os.makedirs(folder)
         except OSError:     # no exist_ok on py2
             pass
-        filename = os.path.join(folder, 'M{}-E{}-F{}-I{}-G{}.str'.format(*mefi))
+        basename = 'M{}-E{}-F{}-I{}-G{}.str'.format(*mefi)
+        filename = os.path.join(folder, basename)
 
         with open(filename, 'w') as f:
             vacc = mefi[0]
