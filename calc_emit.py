@@ -124,7 +124,7 @@ def main(data_folder, madx_file, seq_name):
 
         makedirs('results')
         with open(os.path.join('results', basename + '.yml'), 'wt') as f:
-            yaml.safe_dump(results, f)
+            yaml.safe_dump(results, f, default_flow_style=False)
 
 
 if __name__ == '__main__':
