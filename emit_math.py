@@ -88,13 +88,13 @@ def calc_emit(records,
 
     # pt only valid if use_dispersion=True
     return {
-        'ex':   ex,
-        'ey':   ey,
-        'betx': betx,
-        'bety': bety,
-        'alfx': alfx,
-        'alfy': alfy,
-        'pt':   pt,
+        'ex':   float(ex),
+        'ey':   float(ey),
+        'betx': float(betx),
+        'bety': float(bety),
+        'alfx': float(alfx),
+        'alfy': float(alfy),
+        'pt':   float(pt),
     }
 
 
