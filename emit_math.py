@@ -1,8 +1,12 @@
+# encoding: utf+8
 """
 Module for calculating the emittance from at least 3 monitor measurements and
 the corresponding transfer maps.
 """
 
+from __future__ import unicode_literals
+
+from math import sqrt
 import numpy as np
 
 nan = float("nan")
