@@ -79,7 +79,7 @@ def parse_device_export(filename):
     }
 
 
-def main(data_folder, seq_name, *madx_files):
+def main(data_folder, madx_file, seq_name):
 
     # read all valid measurements:
     all_records = {}
@@ -102,12 +102,12 @@ def main(data_folder, seq_name, *madx_files):
     }
 
     # get a sorted list of monitors
-    sequence = init_madx(madx_files).sequences[seq_name]
+    sequence = init_madx([madx_file]).sequences[seq_name]
     elements = set(dev for devs in averaged.values() for dev in devs)
     elements = sorted(elements, key=sequence.elements.index)
     del sequence
 
-    # TODO: initialize beam
+    # TODO: initialize beam with correct particle + energy (?)
     # NOTE: initial coordinates X=0:
     twiss = dict(sequence=seq_name, betx=1, bety=1)
 
@@ -115,7 +115,7 @@ def main(data_folder, seq_name, *madx_files):
         basename = 'M{}-E{}-F{}-I{}-G{}'.format(*mefi)
 
         strengths = os.path.join('params', basename + '.str')
-        sectormaps = get_sectormaps(twiss, elements, madx_files+[strengths])
+        sectormaps = get_sectormaps(twiss, elements, [madx_file, strengths])
         measurements = [devices[el] for el in elements]
 
         results = calc_emit(measurements, sectormaps,
