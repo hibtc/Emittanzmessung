@@ -66,7 +66,7 @@ def parse_device_export(filename):
     assert mefi[2][0] == 'I'
     assert mefi[3][0] == 'G'
     return {
-        'device': data['Gerät'],
+        'device': data['Gerät'].lower(),
         'mefi': (int(data['VAcc ID']),
                  int(mefi[0][1:]),
                  int(mefi[1][1:]),
