@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import sys
 
 # PyYAML, numpy
 import yaml
@@ -25,7 +26,7 @@ def makedirs(path):
 
 def init_madx(files):
     """Start MAD-X instance and initialize with the given files."""
-    madx = Madx()
+    madx = Madx(stdout=False)
     for f in files:
         madx.call(f, chdir=True)
     return madx
@@ -41,7 +42,7 @@ def get_sectormaps(twiss, elems, files):
     :param list files: initialization files for MAD-X
     :returns:          the sectormaps between the individual monitors
     """
-    return init_madx(files).sectormap(monitors, **twiss)
+    return init_madx(files).sectormap(elems, **twiss)
 
 
 def parse_device_export(filename):
@@ -57,7 +58,7 @@ def parse_device_export(filename):
                 data[parts[0].strip()] = parts[1].strip()
             # we only need the summary from the <HEADER/> and <CUSTOM/>
             # blocks - and can ignore the raw measurements that follow:
-            if line == '</CUSTOM>\n':
+            if line == b'</CUSTOM>\n':
                 break
     mefi = data['Mefi'].split()
     assert mefi[0][0] == 'E'
@@ -65,7 +66,7 @@ def parse_device_export(filename):
     assert mefi[2][0] == 'I'
     assert mefi[3][0] == 'G'
     return {
-        'device': data['Gerät'],
+        'device': data['Gerät'].lower(),
         'mefi': (int(data['VAcc ID']),
                  int(mefi[0][1:]),
                  int(mefi[1][1:]),
@@ -123,7 +124,7 @@ def main(data_folder, madx_file, seq_name):
 
         makedirs('results')
         with open(os.path.join('results', basename + '.yml'), 'wt') as f:
-            yaml.safe_dump(results, f)
+            yaml.safe_dump(results, f, default_flow_style=False)
 
 
 if __name__ == '__main__':
