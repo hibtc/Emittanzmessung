@@ -27,7 +27,7 @@ def init_madx(files):
     """Start MAD-X instance and initialize with the given files."""
     madx = Madx()
     for f in files:
-        madx.call(f)
+        madx.call(f, chdir=True)
     return madx
 
 
