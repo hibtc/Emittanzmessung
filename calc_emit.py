@@ -26,7 +26,7 @@ def makedirs(path):
 
 def init_madx(files):
     """Start MAD-X instance and initialize with the given files."""
-    madx = Madx()
+    madx = Madx(stdout=False)
     for f in files:
         madx.call(f, chdir=True)
     return madx
