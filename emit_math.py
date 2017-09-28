@@ -12,7 +12,7 @@ import numpy as np
 nan = float("nan")
 
 
-def calc_emit(measurements,
+def calc_emit(records,
               transfer_maps,
               calc_long=True,
               calc_4D=False,
@@ -20,7 +20,7 @@ def calc_emit(measurements,
     """
     Calculate emittances.
 
-    :param list measurements:   dictionaries with keys 'envx', 'envy' for the
+    :param list records:        dictionaries with keys 'envx', 'envy' for the
                                 measured beam envelopes at the monitor positions.
     :param list transfer_maps:  transfer maps between the monitor positions,
                                 M(X₀→X₁), M(X₁→X₂), M(X₂→X₃), …
@@ -32,8 +32,8 @@ def calc_emit(measurements,
     """
     # TODO: use_dispersion is not working yet
 
-    assert len(monitors) >= 3 + 3*bool(use_dispersion)
-    assert len(monitors) == len(transfer_maps)
+    assert len(records) >= 3 + 3*bool(use_dispersion)
+    assert len(records) == len(transfer_maps)
 
     # prepare LHS of equation
     tms = list(transfer_maps)
@@ -43,8 +43,8 @@ def calc_emit(measurements,
     tms = np.array(tms)[:,[0,1,2,3,5],:][:,:,[0,1,2,3,5]]   # X,PX,Y,PY,PT
 
     # prepare RHS of equation
-    envx = [m['envx'] for m in monitors]
-    envy = [m['envy'] for m in monitors]
+    envx = [m['envx'] for m in records]
+    envy = [m['envy'] for m in records]
     xcs = [[(0, cx**2), (2, cy**2)]
            for cx, cy in zip(envx, envy)]
 

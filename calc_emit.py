@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import sys
 
 # PyYAML, numpy
 import yaml
@@ -41,7 +42,7 @@ def get_sectormaps(twiss, elems, files):
     :param list files: initialization files for MAD-X
     :returns:          the sectormaps between the individual monitors
     """
-    return init_madx(files).sectormap(monitors, **twiss)
+    return init_madx(files).sectormap(elems, **twiss)
 
 
 def parse_device_export(filename):
