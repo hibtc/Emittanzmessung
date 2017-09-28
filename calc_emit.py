@@ -58,7 +58,7 @@ def parse_device_export(filename):
                 data[parts[0].strip()] = parts[1].strip()
             # we only need the summary from the <HEADER/> and <CUSTOM/>
             # blocks - and can ignore the raw measurements that follow:
-            if line == '</CUSTOM>\n':
+            if line == b'</CUSTOM>\n':
                 break
     mefi = data['Mefi'].split()
     assert mefi[0][0] == 'E'
