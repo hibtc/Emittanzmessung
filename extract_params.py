@@ -20,6 +20,7 @@ def extract(filename):
 
     whitelist = (
         'kl',
+        'kl_efg',
         'ks',
         'ax',
         'ay',
@@ -32,8 +33,8 @@ def extract(filename):
 
         for line in f:
             param = line.split(';')[1]
-            parts = param.lower().split('_')
-            if parts[0] in whitelist and len(parts) == 2:
+            parts = param.lower().rsplit('_', 1)
+            if parts[0] in whitelist:
                 print(param)
 
 
