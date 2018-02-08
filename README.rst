@@ -16,8 +16,9 @@ Benutzung
 - Das dem verwendeten VAcc entsprechende MAD-X Modell ausfindig machen.
 
 - Anschließend ``calc_emit.py`` ausführen mit den drei Parametern:
-  ``<DATA_FOLDER> <MADX_MODEL_FILE> <MADX_SEQUENCE_NAME>``, zum Beispiel::
+  ``<DATA_FOLDER> <MADX_MODEL_FILE> <MADX_SEQUENCE_NAME> <OUTPUT_FILE>``, zum
+  Beispiel::
 
-    python calc_emit.py Emittanzmessung_p_4300 ../hit_models/hht3/run.madx hht3
+    python calc_emit.py Emittanzmessung_p_4300 ../hit_models/hht3/run.madx hht3 emit_p.txt
 
 - Zuletzt ``plot_emit.py`` ausführen

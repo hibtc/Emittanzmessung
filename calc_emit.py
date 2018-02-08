@@ -5,7 +5,7 @@ Dreigitter-Prozedur.
 
 Usage:
 
-    calc_emit.py <DATA_FOLDER> <MADX_MODEL_FILE> <MADX_SEQUENCE_NAME>
+    calc_emit.py <DATA_FOLDER> <MADX_MODEL_FILE> <MADX_SEQUENCE_NAME> <OUTPUT_FILE>
 """
 
 from __future__ import unicode_literals
@@ -17,8 +17,6 @@ import os
 import sys
 from math import sqrt, log
 
-# PyYAML, numpy
-import yaml
 import numpy as np
 
 # need cpymad installed:
@@ -93,7 +91,7 @@ def parse_device_export(filename):
     }
 
 
-def main(data_folder, madx_file, seq_name):
+def main(data_folder, madx_file, seq_name, output_file='results.txt'):
 
     # read all valid measurements:
     all_records = {}
@@ -125,6 +123,8 @@ def main(data_folder, madx_file, seq_name):
     # NOTE: initial coordinates X=0:
     twiss = dict(sequence=seq_name, betx=1, bety=1)
 
+    f = open(output_file, 'wt', 1)
+    print("# vacc energy focus intensity gantry ex ey pt alfx alfy betx bety", file=f)
     for mefi, devices in averaged.items():
         basename = 'M{}-E{}-F{}-I{}-G{}'.format(*mefi)
 
@@ -135,9 +135,23 @@ def main(data_folder, madx_file, seq_name):
         results = calc_emit(measurements, sectormaps,
                             calc_long=True, calc_4D=False)
 
-        makedirs('results')
-        with open(os.path.join('results', basename + '.yml'), 'wt') as f:
-            yaml.safe_dump(results, f, default_flow_style=False)
+        twiss_init = (results['ex'], results['ey'], results['pt'],
+                      results['alfx'], results['alfy'],
+                      results['betx'], results['bety'])
+
+        M, E, F, I, G = mefi
+        chn = format_channel
+
+        print(chn(M, 2), chn(E, 3), chn(F, 2), chn(I, 2), chn(G, 3),
+              *map(format_float, twiss_init), file=f)
+
+
+def format_channel(num, width):
+    return '{:>3}'.format(num)
+
+
+def format_float(num):
+    return '{:>12}'.format('{:+.5e}'.format(num))
 
 
 if __name__ == '__main__':

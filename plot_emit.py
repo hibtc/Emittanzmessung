@@ -2,29 +2,12 @@
 import itertools
 import os
 
-import yaml
+import numpy as np
 import matplotlib.pyplot as plt
 
 
 def is_nan(n):
     return n != n
-
-
-def yaml_load(filename):
-    with open(filename, 'rb') as f:
-        return yaml.safe_load(f.read().decode('utf-8'))
-
-
-def mefi_from_filename(filename):
-    base, ext = os.path.splitext(filename)
-    parts = base.split('-')
-    return (len(parts) == 5 and
-            parts[0][0] == 'M' and
-            parts[1][0] == 'E' and
-            parts[2][0] == 'F' and
-            parts[3][0] == 'I' and
-            parts[4][0] == 'G' and
-            tuple(int(part[1:]) for part in parts))
 
 
 def reslice(tup, indices):
@@ -72,20 +55,30 @@ def plot_var(data, foreach, xname, yname):
 
 
 def load_data(path):
+    data = np.genfromtxt(path, names=True)
     return {
-        mefi: yaml_load(fullname)
-        for filename in os.listdir(path)
-        for fullname in [os.path.join(path, filename)]
-        for mefi in [mefi_from_filename(filename)]
+        tuple(map(int, (
+            d['vacc'], d['energy'], d['focus'], d['intensity'], d['gantry']
+        ))): row_as_dict(d)
+        for d in data
     }
 
 
-data = load_data('results')
-plot_var(data, 'E', 'I', 'ex')
-plot_var(data, 'E', 'I', 'ey')
-plot_var(data, 'I', 'E', 'ex')
-plot_var(data, 'I', 'E', 'ey')
-plot_var(data, 'I', 'E', 'betx')
-plot_var(data, 'I', 'E', 'bety')
-plot_var(data, 'I', 'E', 'alfx')
-plot_var(data, 'I', 'E', 'alfy')
+def row_as_dict(row):
+    return dict(zip(row.dtype.names, row))
+
+
+def main(input_file='results.txt'):
+    data = load_data(input_file)
+    plot_var(data, 'E', 'I', 'ex')
+    plot_var(data, 'E', 'I', 'ey')
+    plot_var(data, 'I', 'E', 'ex')
+    plot_var(data, 'I', 'E', 'ey')
+    plot_var(data, 'I', 'E', 'betx')
+    plot_var(data, 'I', 'E', 'bety')
+    plot_var(data, 'I', 'E', 'alfx')
+    plot_var(data, 'I', 'E', 'alfy')
+
+
+if __name__ == '__main__':
+    import sys; sys.exit(main(*sys.argv[1:]))
