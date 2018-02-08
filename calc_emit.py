@@ -1,4 +1,12 @@
 # encoding: utf-8
+"""
+Berechnung der RMS Emittanzen anhand der FWHM Breiten aus der
+Dreigitter-Prozedur.
+
+Usage:
+
+    calc_emit.py <DATA_FOLDER> <MADX_MODEL_FILE> <MADX_SEQUENCE_NAME>
+"""
 
 from __future__ import unicode_literals
 from __future__ import division
