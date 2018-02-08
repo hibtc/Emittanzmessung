@@ -1,9 +1,13 @@
 # encoding: utf-8
 
 from __future__ import unicode_literals
+from __future__ import division
+from __future__ import print_function
+
 
 import os
 import sys
+from math import sqrt, log
 
 # PyYAML, numpy
 import yaml
@@ -65,6 +69,7 @@ def parse_device_export(filename):
     assert mefi[1][0] == 'F'
     assert mefi[2][0] == 'I'
     assert mefi[3][0] == 'G'
+    fwhm_to_rms = 2*sqrt(2*log(2))
     return {
         'device': data['Gerät'].lower(),
         'mefi': (int(data['VAcc ID']),
@@ -75,8 +80,8 @@ def parse_device_export(filename):
         'tint': float(data['Integrationszeit [s]']),
         'posx': float(data['Schwerpunkt X']),
         'posy': float(data['Schwerpunkt Y']),
-        'envx': float(data['FWHM X']),
-        'envy': float(data['FWHM Y']),
+        'envx': float(data['FWHM X']) / 1000 / fwhm_to_rms,
+        'envy': float(data['FWHM Y']) / 1000 / fwhm_to_rms,
     }
 
 
