@@ -2,6 +2,8 @@
 Parameter download from BeamOptikDll.
 """
 
+from __future__ import division
+
 import os
 import sys
 import signal
@@ -36,7 +38,7 @@ VACCS       = [1]
 ENERGIES    = [1, 18, 48, 78, 108, 138, 168, 198, 228, 255]
 FOCUSES     = [4]
 INTENSITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ANGLE       = [0]
+ANGLES      = [0]
 
 
 def fmt_ints(ints):
@@ -135,6 +137,7 @@ class MainWindow(QtGui.QWidget):
         self.log('Connecting DLL')
         dll = BeamOptikDLL.load_library()
         dll.GetInterfaceInstance()
+        dll.SelectVAcc(1)
         self.dll = dll
         self.log('Connected')
 
@@ -147,6 +150,7 @@ class MainWindow(QtGui.QWidget):
         for i, mefi in enumerate(itertools.product(*mefis)):
             if not self.running:
                 break
+            vacc = mefi[0]
             progress = '{}/{} = {:.0f}%'.format(i, num, i/num*100)
             self.download_mefi(par[vacc], mefi, progress)
 
@@ -166,7 +170,12 @@ class MainWindow(QtGui.QWidget):
                 self.log('SelectVAcc({})', vacc)
                 self.dll.SelectVAcc(vacc)
             self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={}, G={})', progress, *mefi)
-            self.dll.SelectMEFI(*mefi)
+            mefi_values = self.dll.SelectMEFI(*mefi)
+            f.write('beam_energy = {};\n'
+                    'focus_value = {};\n'
+                    'intensity_value = {};\n'
+                    'gantry_angle = {};\n'
+                    .format(*mefi_values))
 
             for param in list(params):
                 if not self.running:
