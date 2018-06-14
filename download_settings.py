@@ -170,7 +170,12 @@ class MainWindow(QtGui.QWidget):
                 self.log('SelectVAcc({})', vacc)
                 self.dll.SelectVAcc(vacc)
             self.log('[{}] SelectMEFI(M={}, E={}, F={}, I={}, G={})', progress, *mefi)
-            self.dll.SelectMEFI(*mefi)
+            mefi_values = self.dll.SelectMEFI(*mefi)
+            f.write('beam_energy = {};\n'
+                    'focus_value = {};\n'
+                    'intensity_value = {};\n'
+                    'gantry_angle = {};\n'
+                    .format(*mefi_values))
 
             for param in list(params):
                 if not self.running:
