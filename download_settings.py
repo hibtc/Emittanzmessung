@@ -38,7 +38,7 @@ VACCS       = [1]
 ENERGIES    = [1, 18, 48, 78, 108, 138, 168, 198, 228, 255]
 FOCUSES     = [4]
 INTENSITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ANGLE       = [0]
+ANGLES      = [0]
 
 
 def fmt_ints(ints):
@@ -149,6 +149,7 @@ class MainWindow(QtGui.QWidget):
         for i, mefi in enumerate(itertools.product(*mefis)):
             if not self.running:
                 break
+            vacc = mefi[0]
             progress = '{}/{} = {:.0f}%'.format(i, num, i/num*100)
             self.download_mefi(par[vacc], mefi, progress)
 
