@@ -33,12 +33,7 @@ DATA_FOLDER = os.path.dirname(__file__)
 sys.path.append(DATA_FOLDER)
 from beamoptikdll import BeamOptikDLL
 
-
-VACCS       = [1]
-ENERGIES    = [1, 18, 48, 78, 108, 138, 168, 198, 228, 255]
-FOCUSES     = [4]
-INTENSITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ANGLES      = [0]
+from mefi_combinations import VACCS, ENERGIES, FOCUSES, INTENSITIES, ANGLES
 
 
 def fmt_ints(ints):
