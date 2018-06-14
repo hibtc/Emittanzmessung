@@ -13,6 +13,7 @@ import itertools
 import functools
 import collections
 import re
+from collections import namedtuple
 
 # Load Qt4 or Qt5
 try:
@@ -35,11 +36,17 @@ sys.path.append(DATA_FOLDER)
 from beamoptikdll import BeamOptikDLL
 
 
+MEFI = namedtuple('MEFI', ['vacc', 'energy', 'focus', 'intensity', 'angle'])
+
+
 def fmt_ints(ints):
     return ', '.join(map(str, ints))
 
 def parse_ints(text):
-    return [int(x) for x in text.split(',') if x.strip()]
+    try:
+        return [int(x) for x in text.split(',') if x.strip()]
+    except ValueError:
+        return []
 
 def parse_conf(text):
     for line in text.splitlines():
@@ -105,7 +112,8 @@ class MainWindow(QtGui.QWidget):
 
     def update_ui(self):
         running = self.running
-        can_start = self.can_start()
+        mefis = MEFI(*map(bool, self.mefi()))
+        can_start = all(mefis)
         self.btn_download.setEnabled(can_start and not self.running)
         self.mefi_buttons.button(QtGui.QDialogButtonBox.Save).setEnabled(can_start)
         self.btn_cancel.setEnabled(running)
@@ -114,6 +122,13 @@ class MainWindow(QtGui.QWidget):
         self.ctrl_focus.setReadOnly(running)
         self.ctrl_intensity.setReadOnly(running)
         self.ctrl_angle.setReadOnly(running)
+
+        color = [QtCore.Qt.red, None]
+        set_base_color(self.ctrl_vacc,      color[mefis.vacc])
+        set_base_color(self.ctrl_energy,    color[mefis.energy])
+        set_base_color(self.ctrl_focus,     color[mefis.focus])
+        set_base_color(self.ctrl_intensity, color[mefis.intensity])
+        set_base_color(self.ctrl_angle,     color[mefis.angle])
 
     def save_mefis(self, filename, mefis):
         self._mefis_file = os.path.abspath(filename)
@@ -152,18 +167,11 @@ class MainWindow(QtGui.QWidget):
             self.save_mefis(filename, self.mefi())
 
     def mefi(self):
-        return (parse_ints(self.ctrl_vacc.text()),
-                parse_ints(self.ctrl_energy.text()),
-                parse_ints(self.ctrl_focus.text()),
-                parse_ints(self.ctrl_intensity.text()),
-                parse_ints(self.ctrl_angle.text()))
-
-    def can_start(self):
-        try:
-            mefi = self.mefi()
-        except ValueError:
-            return False
-        return all(mefi)
+        return MEFI(parse_ints(self.ctrl_vacc.text()),
+                    parse_ints(self.ctrl_energy.text()),
+                    parse_ints(self.ctrl_focus.text()),
+                    parse_ints(self.ctrl_intensity.text()),
+                    parse_ints(self.ctrl_angle.text()))
 
     def start(self):
         self.ctrl_tab.setCurrentIndex(2)
@@ -250,6 +258,13 @@ class MainWindow(QtGui.QWidget):
                     # MADX compatible output format:
                     f.write('{} = {};\n'.format(param, val))
             self.log('FINISHED M{2} E{3} F{4} I{5} G{6}, read {0}/{1} params\n', len(params), num_params, *mefi)
+
+
+def set_base_color(widget, color):
+    palette = widget.parent().palette();
+    if color is not None:
+        palette.setColor(QtGui.QPalette.Base, color);
+    widget.setPalette(palette)
 
 
 def make_filters(wildcards):
