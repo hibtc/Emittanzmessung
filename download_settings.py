@@ -2,6 +2,8 @@
 Parameter download from BeamOptikDll.
 """
 
+from __future__ import division
+
 import os
 import sys
 import signal
