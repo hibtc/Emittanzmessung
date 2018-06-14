@@ -23,7 +23,7 @@
       <attribute name="title">
        <string>MEFI</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
@@ -77,6 +77,16 @@
           <widget class="QLineEdit" name="ctrl_angle"/>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="mefi_buttons">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Open|QDialogButtonBox::Save</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
