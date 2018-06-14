@@ -33,8 +33,6 @@ DATA_FOLDER = os.path.dirname(__file__)
 sys.path.append(DATA_FOLDER)
 from beamoptikdll import BeamOptikDLL
 
-from mefi_combinations import VACCS, ENERGIES, FOCUSES, INTENSITIES, ANGLES
-
 
 def fmt_ints(ints):
     return ', '.join(map(str, ints))
@@ -50,16 +48,38 @@ class MainWindow(QtGui.QWidget):
     running = False
     logged = QtCore.pyqtSignal(str)
 
-    def __init__(self, param_file=None):
+    def __init__(self, param_file=None, mefis_file=None):
         super(MainWindow, self).__init__()
         uic.loadUi(os.path.join(DATA_FOLDER, 'dialog.ui'), self)
-        self.ctrl_vacc.setText(fmt_ints(VACCS))
-        self.ctrl_energy.setText(fmt_ints(ENERGIES))
-        self.ctrl_focus.setText(fmt_ints(FOCUSES))
-        self.ctrl_intensity.setText(fmt_ints(INTENSITIES))
-        self.ctrl_angle.setText(fmt_ints(ANGLES))
-        self.load_params(param_file)
-        # signals
+        self.load_mefis(
+            mefis_file or os.path.join(DATA_FOLDER, 'mefi_combinations.txt'))
+        self.load_params(
+            param_file or os.path.join(DATA_FOLDER, 'params.txt'))
+        self.update_ui()
+        self.connect_signals()
+
+    def load_mefis(self, filename):
+        self._mefis_file = os.path.abspath(filename)
+        with open(filename) as f:
+            text = f.read()
+        mefis = {}
+        with open(filename) as f:
+            code = compile(f.read(), filename, 'exec')
+            exec(code, mefis, mefis)
+        self.set_mefis(mefis)
+
+    def set_mefis(self, mefis):
+        self.ctrl_vacc.setText(fmt_ints(mefis['VACCS']))
+        self.ctrl_energy.setText(fmt_ints(mefis['ENERGIES']))
+        self.ctrl_focus.setText(fmt_ints(mefis['FOCUSES']))
+        self.ctrl_intensity.setText(fmt_ints(mefis['INTENSITIES']))
+        self.ctrl_angle.setText(fmt_ints(mefis['ANGLES']))
+        self._mefis = mefis
+
+    def connect_signals(self):
+        Btn = QtGui.QDialogButtonBox
+        self.mefi_buttons.button(Btn.Open).clicked.connect(self.open_mefi)
+        self.mefi_buttons.button(Btn.Save).clicked.connect(self.save_mefi)
         self.btn_download.clicked.connect(self.start)
         self.btn_cancel.clicked.connect(self.cancel)
         self.ctrl_vacc.textChanged.connect(self.update_ui)
@@ -67,7 +87,6 @@ class MainWindow(QtGui.QWidget):
         self.ctrl_focus.textChanged.connect(self.update_ui)
         self.ctrl_intensity.textChanged.connect(self.update_ui)
         self.ctrl_angle.textChanged.connect(self.update_ui)
-        #
         self.logged.connect(self.ctrl_log.appendPlainText)
 
     def closeEvent(self, event):
@@ -75,7 +94,7 @@ class MainWindow(QtGui.QWidget):
         super(MainWindow, self).closeEvent(event)
 
     def load_params(self, param_file=None):
-        with open(param_file or os.path.join(DATA_FOLDER, 'params.txt')) as f:
+        with open(param_file) as f:
             params = [line.strip() for line in f]
         self.ctrl_params.clear()
         self.ctrl_params.addItems(sorted(params))
@@ -84,12 +103,49 @@ class MainWindow(QtGui.QWidget):
         running = self.running
         can_start = self.can_start()
         self.btn_download.setEnabled(can_start and not self.running)
+        self.mefi_buttons.button(QtGui.QDialogButtonBox.Save).setEnabled(can_start)
         self.btn_cancel.setEnabled(running)
         self.ctrl_vacc.setReadOnly(running)
         self.ctrl_energy.setReadOnly(running)
         self.ctrl_focus.setReadOnly(running)
         self.ctrl_intensity.setReadOnly(running)
         self.ctrl_angle.setReadOnly(running)
+
+    def save_mefis(self, filename, mefis):
+        self._mefis_file = os.path.abspath(filename)
+        text = (
+            "VACCS       = {}\n"
+            "ENERGIES    = {}\n"
+            "FOCUSES     = {}\n"
+            "INTENSITIES = {}\n"
+            "ANGLES      = {}\n"
+        ).format(*mefis)
+        with open(filename, 'wt') as f:
+            f.write(text)
+
+    def open_mefi(self):
+        folder = os.path.dirname(self._mefis_file)
+        filename = _fileDialog(
+            QtGui.QFileDialog.AcceptOpen,
+            QtGui.QFileDialog.ExistingFile,
+            self, 'Open file', folder, [
+                ("TXT files", "*.txt"),
+                ("All files", "*"),
+            ])
+        if filename:
+            self.load_mefis(filename)
+
+    def save_mefi(self):
+        folder = os.path.dirname(self._mefis_file)
+        filename = _fileDialog(
+            QtGui.QFileDialog.AcceptSave,
+            QtGui.QFileDialog.AnyFile,
+            self, 'Open file', folder, [
+                ("TXT files", "*.txt"),
+                ("All files", "*"),
+            ])
+        if filename:
+            self.save_mefis(filename, self.mefi())
 
     def mefi(self):
         return (parse_ints(self.ctrl_vacc.text()),
@@ -192,12 +248,57 @@ class MainWindow(QtGui.QWidget):
             self.log('FINISHED M{2} E{3} F{4} I{5} G{6}, read {0}/{1} params\n', len(params), num_params, *mefi)
 
 
-def main(param_file=None):
+def make_filters(wildcards):
+    """
+    Create wildcard string from multiple wildcard tuples.
+
+    For example:
+
+        >>> make_filters([
+        ...     ('All files', '*'),
+        ...     ('Text files', '*.txt', '*.log'),
+        ... ])
+        ['All files (*)', 'Text files (*.txt *.log)']
+    """
+    return ["{0} ({1})".format(w[0], " ".join(w[1:]))
+            for w in wildcards]
+
+
+def _fileDialog(acceptMode, fileMode,
+                parent=None, caption='', directory='', filters=(),
+                selectedFilter=None, options=0):
+
+    nameFilters = make_filters(filters)
+
+    dialog = QtGui.QFileDialog(parent, caption, directory)
+    dialog.setNameFilters(nameFilters)
+    dialog.setAcceptMode(acceptMode)
+    dialog.setFileMode(fileMode)
+    dialog.setOptions(QtGui.QFileDialog.Options(options))
+    if selectedFilter is not None:
+        dialog.selectNameFilter(nameFilters[selectedFilter])
+
+    if dialog.exec_() != QtGui.QDialog.Accepted:
+        return None
+
+    filename = dialog.selectedFiles()[0]
+    selectedFilter = nameFilters.index(dialog.selectedNameFilter())
+
+    _, ext = os.path.splitext(filename)
+
+    if not ext:
+        ext = filters[selectedFilter][1]    # use first extension
+        if ext.startswith('*.') and ext != '*.*':
+            return filename + ext[1:]       # remove leading '*'
+    return filename
+
+
+def main(param_file=None, mefis_file=None):
     """Invoke GUI application."""
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app = QtGui.QApplication(sys.argv)
-    window = MainWindow(param_file)
+    window = MainWindow(param_file, mefis_file)
 
     logging.basicConfig(level=logging.INFO)
 
