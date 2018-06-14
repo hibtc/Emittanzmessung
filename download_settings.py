@@ -12,6 +12,7 @@ import threading
 import itertools
 import functools
 import collections
+import re
 
 # Load Qt4 or Qt5
 try:
@@ -40,6 +41,13 @@ def fmt_ints(ints):
 def parse_ints(text):
     return [int(x) for x in text.split(',')]
 
+def parse_conf(text):
+    for line in text.splitlines():
+        line = line.split('#')[0].strip()
+        if line:
+            m = re.match(r'^(\w*)\s*=\s*\[(.*)\]\s*$', line)
+            yield m.group(1), parse_ints(m.group(2))
+
 
 class MainWindow(QtGui.QWidget):
 
@@ -62,11 +70,7 @@ class MainWindow(QtGui.QWidget):
         self._mefis_file = os.path.abspath(filename)
         with open(filename) as f:
             text = f.read()
-        mefis = {}
-        with open(filename) as f:
-            code = compile(f.read(), filename, 'exec')
-            exec(code, mefis, mefis)
-        self.set_mefis(mefis)
+        self.set_mefis(dict(parse_conf(text)))
 
     def set_mefis(self, mefis):
         self.ctrl_vacc.setText(fmt_ints(mefis['VACCS']))
