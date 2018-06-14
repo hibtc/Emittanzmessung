@@ -39,7 +39,7 @@ def fmt_ints(ints):
     return ', '.join(map(str, ints))
 
 def parse_ints(text):
-    return [int(x) for x in text.split(',')]
+    return [int(x) for x in text.split(',') if x.strip()]
 
 def parse_conf(text):
     for line in text.splitlines():
