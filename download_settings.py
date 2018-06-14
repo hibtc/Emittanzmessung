@@ -12,7 +12,7 @@ import threading
 import itertools
 import functools
 import collections
-import json
+import re
 
 # Load Qt4 or Qt5
 try:
@@ -41,6 +41,13 @@ def fmt_ints(ints):
 def parse_ints(text):
     return [int(x) for x in text.split(',')]
 
+def parse_conf(text):
+    for line in text.splitlines():
+        line = line.split('#')[0].strip()
+        if line:
+            m = re.match(r'^(\w*)\s*=\s*\[(.*)\]\s*$', line)
+            yield m.group(1), parse_ints(m.group(2))
+
 
 class MainWindow(QtGui.QWidget):
 
@@ -53,7 +60,7 @@ class MainWindow(QtGui.QWidget):
         super(MainWindow, self).__init__()
         uic.loadUi(os.path.join(DATA_FOLDER, 'dialog.ui'), self)
         self.load_mefis(
-            mefis_file or os.path.join(DATA_FOLDER, 'mefi_combinations.json'))
+            mefis_file or os.path.join(DATA_FOLDER, 'mefi_combinations.txt'))
         self.load_params(
             param_file or os.path.join(DATA_FOLDER, 'params.txt'))
         self.update_ui()
@@ -63,7 +70,7 @@ class MainWindow(QtGui.QWidget):
         self._mefis_file = os.path.abspath(filename)
         with open(filename) as f:
             text = f.read()
-        self.set_mefis(json.loads(text))
+        self.set_mefis(dict(parse_conf(text)))
 
     def set_mefis(self, mefis):
         self.ctrl_vacc.setText(fmt_ints(mefis['VACCS']))
@@ -110,14 +117,13 @@ class MainWindow(QtGui.QWidget):
 
     def save_mefis(self, filename, mefis):
         self._mefis_file = os.path.abspath(filename)
-        vaccs, energies, focuses, intensities, angles = mefis
-        text = json.dumps({
-            'VACCS': vaccs,
-            'ENERGIES': energies,
-            'FOCUSES': focuses,
-            'INTENSITIES': intensities,
-            'ANGLES': angles,
-        }, indent=1)
+        text = (
+            "VACCS       = {}\n"
+            "ENERGIES    = {}\n"
+            "FOCUSES     = {}\n"
+            "INTENSITIES = {}\n"
+            "ANGLES      = {}\n"
+        ).format(*mefis)
         with open(filename, 'wt') as f:
             f.write(text)
 
@@ -127,7 +133,7 @@ class MainWindow(QtGui.QWidget):
             QtGui.QFileDialog.AcceptOpen,
             QtGui.QFileDialog.ExistingFile,
             self, 'Open file', folder, [
-                ("JSON files", "*.json"),
+                ("TXT files", "*.txt"),
                 ("All files", "*"),
             ])
         if filename:
@@ -139,7 +145,7 @@ class MainWindow(QtGui.QWidget):
             QtGui.QFileDialog.AcceptSave,
             QtGui.QFileDialog.AnyFile,
             self, 'Open file', folder, [
-                ("JSON files", "*.json"),
+                ("TXT files", "*.txt"),
                 ("All files", "*"),
             ])
         if filename:
