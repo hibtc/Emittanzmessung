@@ -177,11 +177,13 @@ class MainWindow(QtGui.QWidget):
                     'gantry_angle = {};\n'
                     .format(*mefi_values))
 
+            num_params = len(params)
             for param in list(params):
                 if not self.running:
                     break
                 try:
                     val = self.dll.GetFloatValue(param)
+                    #self.log('{} -> {}', param, val)
                 except RuntimeError as e:
                     self.log('{} -> FAILED: {}', param, e)
                     # forget this parameter for current VAcc for efficiency:
@@ -192,6 +194,7 @@ class MainWindow(QtGui.QWidget):
                 else:
                     # MADX compatible output format:
                     f.write('{} = {};\n'.format(param, val))
+            self.log('FINISHED M{2} E{3} F{4} I{5} G{6}, read {0}/{1} params\n', len(params), num_params, *mefi)
 
 
 def main(param_file=None):
