@@ -198,7 +198,7 @@ class MainWindow(QtGui.QWidget):
 
     def load_dll(self):
         self.log('Connecting DLL')
-        dll = BeamOptikDLL.load_library()
+        dll = BeamOptikDLL()
         dll.GetInterfaceInstance()
         dll.SelectVAcc(1)
         self.dll = dll
